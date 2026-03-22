@@ -18,10 +18,9 @@ const MODEL_MAP = {
   "deepseek-chat":    "deepseek-chat",
   "gpt-4o":           "gpt-4o",
   "gpt-4o-mini":      "gpt-4o-mini",
-  "gemini-2.0-flash": "gemini-2.0-flash",
 };
 
-function resolvModel(requested) {
+function resolveModel(requested) {
   if (!requested) return "z-ai/glm-4.7";
   return MODEL_MAP[requested.toLowerCase()] || requested;
 }
@@ -47,43 +46,33 @@ app.post("/v1/chat/completions", async (req, res) => {
     }
 
     const { messages, model, stream, max_tokens, temperature } = req.body;
-    const puterModel = resolvModel(model);
+    const puterModel = resolveModel(model);
 
     console.log(`[Request] Model: ${model} → ${puterModel}`);
 
-    const puterRes = await fetch("https://api.puter.com/drivers/call", {
+    const puterRes = await fetch("https://api.puter.com/puterai/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
-        interface: "puter-chat-completion",
-        test_mode: false,
-        driver: puterModel.startsWith("z-ai") ? "z-ai" : puterModel.split("/")[0],
-        method: "complete",
-        args: {
-          model: puterModel,
-          messages: messages,
-          max_tokens: max_tokens || 2048,
-          temperature: temperature || 0.9,
-          stream: false,
-        },
+        model: puterModel,
+        messages: messages,
+        max_tokens: max_tokens || 2048,
+        temperature: temperature || 0.9,
+        stream: false,
       }),
     });
 
     if (!puterRes.ok) {
       const errText = await puterRes.text();
+      console.error(`[Puter Error] ${puterRes.status}: ${errText}`);
       return res.status(502).json({ error: { message: `Puter API error: ${puterRes.status} - ${errText}`, type: "upstream_error" } });
     }
 
     const puterData = await puterRes.json();
-
-    let content = "";
-    if (puterData?.result?.message?.content) content = puterData.result.message.content;
-    else if (puterData?.result?.content) content = puterData.result.content;
-    else if (typeof puterData?.result === "string") content = puterData.result;
-    else content = JSON.stringify(puterData);
+    const content = puterData?.choices?.[0]?.message?.content || "";
 
     const responseId = `chatcmpl-${Date.now()}`;
 
