@@ -9,15 +9,36 @@ app.use(express.json({ limit: "10mb" }));
 const PORT = process.env.PORT || 3000;
 
 const MODEL_MAP = {
-  "glm-4.7":          "z-ai/glm-4.7",
-  "glm-4.7-flash":    "z-ai/glm-4.7-flash",
-  "glm-5":            "z-ai/glm-5",
-  "glm-5-turbo":      "z-ai/glm-5-turbo",
-  "glm4.7":           "z-ai/glm-4.7",
-  "glm5":             "z-ai/glm-5",
-  "deepseek-chat":    "deepseek-chat",
-  "gpt-4o":           "gpt-4o",
-  "gpt-4o-mini":      "gpt-4o-mini",
+  // ── GLM (best for angst/RP) ──────────────────────────
+  "glm-4.7":                "z-ai/glm-4.7",
+  "glm-4.7-flash":          "z-ai/glm-4.7-flash",
+  "glm-5":                  "z-ai/glm-5",
+
+  // ── Claude (great for emotional writing) ─────────────
+  "claude-sonnet":          "claude-sonnet-4-6",
+  "claude-opus":            "claude-opus-4-6",
+  "claude-haiku":           "claude-haiku-4-5",
+  "claude-sonnet-3.7":      "claude-3-7-sonnet",
+
+  // ── DeepSeek ─────────────────────────────────────────
+  "deepseek-chat":          "deepseek/deepseek-chat",
+  "deepseek-r1":            "deepseek/deepseek-r1",
+
+  // ── Gemini ────────────────────────────────────────────
+  "gemini-flash":           "google/gemini-2.0-flash",
+  "gemini-2.5-flash":       "google/gemini-2.5-flash",
+  "gemini-2.5-pro":         "google/gemini-2.5-pro",
+
+  // ── Grok ──────────────────────────────────────────────
+  "grok-3":                 "x-ai/grok-3",
+  "grok-3-mini":            "x-ai/grok-3-mini",
+
+  // ── Mistral ───────────────────────────────────────────
+  "mistral-large":          "mistral/mistral-large-latest",
+
+  // ── GPT ───────────────────────────────────────────────
+  "gpt-4o":                 "gpt-4o",
+  "gpt-4o-mini":            "gpt-4o-mini",
 };
 
 function resolveModel(requested) {
