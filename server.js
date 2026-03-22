@@ -14,13 +14,12 @@ const MODEL_MAP = {
   "glm-4.7-flash":          "z-ai/glm-4.7-flash",
   "glm-5":                  "z-ai/glm-5",
 
-  // ── Claude (great for emotional writing) ─────────────
+  // ── Claude ────────────────────────────────────────────
   "claude-sonnet":          "claude-sonnet-4-6",
   "claude-opus":            "claude-opus-4-6",
   "claude-haiku":           "claude-haiku-4-5",
-  "claude-sonnet-3.7":      "claude-3-7-sonnet",
 
-  // ── DeepSeek ─────────────────────────────────────────
+  // ── DeepSeek ──────────────────────────────────────────
   "deepseek-chat":          "deepseek/deepseek-chat",
   "deepseek-r1":            "deepseek/deepseek-r1",
 
@@ -71,6 +70,24 @@ app.post("/v1/chat/completions", async (req, res) => {
 
     console.log(`[Request] Model: ${model} → ${puterModel}`);
 
+    // ── Roleplay enhancer system prompt ──────────────────
+    const rpSystemPrompt = {
+      role: "system",
+      content: `You are an expert creative writer specializing in emotionally rich roleplay. Follow these rules strictly:
+- Always stay in character no matter what. Never break immersion.
+- Write responses with vivid emotional depth, body language, and internal thoughts.
+- Mirror the tone of the conversation — if it's angsty, be angsty. If it's tense, be tense.
+- Use descriptive, literary prose. Show don't tell.
+- Never summarize emotions — express them through actions, dialogue, and subtle details.
+- Keep responses focused and immersive. Avoid filler words or repetition.
+- Remember previous context and stay consistent with the character's personality and history.`
+    };
+
+    const hasSystemPrompt = messages && messages[0]?.role === "system";
+    const enhancedMessages = hasSystemPrompt
+      ? messages
+      : [rpSystemPrompt, ...(messages || [])];
+
     const puterRes = await fetch("https://api.puter.com/puterai/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -79,7 +96,7 @@ app.post("/v1/chat/completions", async (req, res) => {
       },
       body: JSON.stringify({
         model: puterModel,
-        messages: messages,
+        messages: enhancedMessages,
         max_tokens: max_tokens || 2048,
         temperature: temperature || 0.9,
         stream: false,
